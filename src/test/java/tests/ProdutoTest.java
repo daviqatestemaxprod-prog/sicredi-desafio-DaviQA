@@ -25,6 +25,22 @@ public class ProdutoTest extends BaseTest {
         ProdutosResponse produtos = resposta.as(ProdutosResponse.class);
         assertNotNull(produtos.products());
         assertFalse(produtos.products().isEmpty());
+        assertNotNull(produtos.total());
+        assertNotNull(produtos.skip());
+        assertNotNull(produtos.limit());
+        assertTrue(produtos.total() >= produtos.products().size());
+        assertTrue(produtos.skip() >= 0);
+        assertTrue(produtos.limit() >= produtos.products().size());
+        for (ProdutoResponse produto : produtos.products()) {
+            assertNotNull(produto.id());
+            assertTrue(produto.id() > 0);
+            assertNotNull(produto.nome());
+            assertFalse(produto.nome().isBlank());
+            assertNotNull(produto.preco());
+            assertTrue(produto.preco().signum() >= 0);
+            assertNotNull(produto.quantidade());
+            assertTrue(produto.quantidade() >= 0);
+        }
     }
 
     @Test
@@ -63,6 +79,22 @@ public class ProdutoTest extends BaseTest {
         ProdutosResponse produtos = resposta.as(ProdutosResponse.class);
         assertNotNull(produtos.products());
         assertFalse(produtos.products().isEmpty());
+        assertNotNull(produtos.total());
+        assertNotNull(produtos.skip());
+        assertNotNull(produtos.limit());
+        assertTrue(produtos.total() >= produtos.products().size());
+        assertTrue(produtos.skip() >= 0);
+        assertTrue(produtos.limit() >= produtos.products().size());
+        for (ProdutoResponse produto : produtos.products()) {
+            assertNotNull(produto.id());
+            assertTrue(produto.id() > 0);
+            assertNotNull(produto.nome());
+            assertFalse(produto.nome().isBlank());
+            assertNotNull(produto.preco());
+            assertTrue(produto.preco().signum() >= 0);
+            assertNotNull(produto.quantidade());
+            assertTrue(produto.quantidade() >= 0);
+        }
     }
 
     @Test

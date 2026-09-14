@@ -25,9 +25,9 @@ testes-api:
   script:
     - |
       test_status=0
-      mvn --batch-mode clean test || test_status=$?
+      sh ./mvnw --batch-mode clean test || test_status=$?
       report_status=0
-      mvn --batch-mode allure:report || report_status=$?
+      sh ./mvnw --batch-mode allure:report || report_status=$?
       if [ "$test_status" -ne 0 ]; then
         exit "$test_status"
       fi

@@ -8,12 +8,12 @@ Referência: [documentação do desafio](https://sicredi-desafio-qe.readme.io/ll
 
 ## ▶️ Como Executar
 
-Pré-requisitos: JDK 17 e Maven instalados, `JAVA_HOME` configurado, comandos `java` e `mvn` disponíveis no PATH e acesso à internet para baixar dependências e acessar a API.
+Pré-requisitos: JDK 17 instalado, `JAVA_HOME` configurado e acesso à internet. O Maven Wrapper baixa Maven 3.9.9 automaticamente; não é necessário instalar Maven separadamente.
 
 Na raiz do projeto, execute:
 
 ```bash
-mvn clean test
+.\mvnw.cmd clean test
 ```
 
 Por padrão, a URL é `https://dummyjson.com` e o login utiliza o usuário público de exemplo `emilys`, com senha `emilyspass`. A URL pode ser alterada pela propriedade `api.base.url`; as credenciais, por `api.username` e `api.password`.
@@ -21,18 +21,18 @@ Por padrão, a URL é `https://dummyjson.com` e o login utiliza o usuário públ
 Após a execução, os resultados do Allure ficam em `target/allure-results`. Para gerar o relatório HTML:
 
 ```bash
-mvn allure:report
+.\mvnw.cmd allure:report
 ```
 
 Para gerar e abrir o relatório em um servidor local:
 
 ```bash
-mvn allure:serve
+.\mvnw.cmd allure:serve
 ```
 
 Execute o comando do Allure separadamente mesmo se houver falhas nos testes. Não execute `clean` entre os testes e a geração do relatório, pois ele apaga os resultados.
 
-A integração contínua em `.github/workflows/ci.yml` executa `mvn clean test` com Java 17 em pushes para `main` e em pull requests destinados a `main`. Qualquer falha de teste reprova o job.
+A integração contínua em `.github/workflows/ci.yml` executa `.\mvnw.cmd clean test` com Java 17 em pushes para `main` e em pull requests destinados a `main`. Qualquer falha de teste reprova o job.
 
 No GitLab, `.gitlab-ci.yml` usa Maven 3.9.9 e Java 17. Executa em pushes para `main`, merge requests destinados a `main` e execuções manuais nessa branch. O checkout é realizado pelo GitLab Runner. É necessário um runner compatível com imagens Docker, habilitado e com acesso à internet.
 
@@ -40,15 +40,15 @@ A pipeline tenta gerar o Allure mesmo quando os testes falham, preserva a falha 
 
 **Checklist de entrega no GitLab**
 
-1. Criar o projeto com visibilidade **Private** e enviar o código e README para `main`.
+1. Conforme orientação específica da recrutadora, criar o projeto com visibilidade **Public** e enviar o código e README para `main`.
 2. Definir `main` como branch padrão.
-3. Convidar `correcaoprovaqa@sicredi.com.br` (avaliador `sicredi_user`) como **Developer** e conferir o estado do convite.
+3. Enviar o link do GitLab à recrutadora por WhatsApp, conforme solicitado. Não é necessário acesso de edição para visualizar o repositório público; convites Developer permanecem condicionados à confirmação dessa exigência.
 4. Se a candidatura for por empresa parceira, convidar também o representante informado com papel **Developer**.
-5. Conferir o job `testes-api`: resultado esperado de 12 testes aprovados e artefatos disponíveis. O sucesso local não confirma execução remota.
+5. Conferir o job `testes-api`: resultado esperado de 14 testes aprovados e artefatos disponíveis. O sucesso local não confirma execução remota.
 
-Referência: [instruções oficiais de entrega](https://sicredi-desafio-qe.readme.io/reference/como-entregar-o-desafio). A criação do projeto privado, os convites e a execução remota precisam ser confirmados no GitLab; a presença deste checklist não significa que foram concluídos.
+Referência: [instruções oficiais de entrega](https://sicredi-desafio-qe.readme.io/reference/como-entregar-o-desafio). A publicação do projeto público, o envio do link e a execução remota precisam ser confirmados no GitLab; a presença deste checklist não significa que foram concluídos.
 
-**Validação:** execute `mvn clean test` para obter o resultado atual. Os testes acessam a API pública e dependem da sua disponibilidade.
+**Validação:** execute `.\mvnw.cmd clean test` para obter o resultado atual. Os testes acessam a API pública e dependem da sua disponibilidade.
 
 ## 🎯 Estratégia e Plano de Testes
 
@@ -88,7 +88,7 @@ A documentação do desafio apresenta exemplos de login e autenticação que pod
 
 A pipeline do GitHub gera o relatório Allure e disponibiliza o artefato `relatorios-testes`, mesmo quando os testes falham. O HTML fica em `target/site/allure-maven-plugin/index.html`.
 
-A entrega oficial exige repositório privado no GitLab, branch `main` e convite ao avaliador como Developer. O GitHub atual serve para desenvolvimento; não substitui esses requisitos de entrega.
+A página geral do desafio pede GitLab privado e convite Developer, mas a orientação específica recebida da recrutadora pede GitLab público e envio do link por WhatsApp. Para esta entrega, seguimos a orientação específica. O GitHub atual não substitui o GitLab solicitado.
 
 **Revisão técnica — 14/09/2026**
 
@@ -111,3 +111,11 @@ Execução local em Java 17: **12 testes, 0 falhas, 0 erros, 0 ignorados**. Esse
 - [Produto por ID](https://sicredi-desafio-qe.readme.io/reference/get-products-id): os cenários 200 e 404 seguem os exemplos documentados. O ID 1 é a referência existente; o maior inteiro positivo é usado como inexistente na massa atual.
 
 A referência deve ser alinhada com o responsável pelo desafio antes de tratar diferenças entre documentação e serviço como requisitos definitivos. A suíte preserva as diferenças aqui registradas, sem classificá-las automaticamente como vulnerabilidades.
+
+**Execução simplificada e diagnósticos**
+
+Os comandos acima são para PowerShell no Windows. Em Linux/macOS use `sh ./mvnw clean test` e `sh ./mvnw allure:serve`. As duas pipelines usam o Wrapper para fixar a mesma versão do Maven.
+
+As requisições têm limite de 10 segundos para conexão e 20 segundos para espera de dados. O Allure recebe metadados HTTP (método, caminho sem query, resultado e duração). Corpos, headers e cookies não são anexados, evitando registrar credenciais e tokens.
+
+A suíte agora inclui username vazio e password vazio (400 e mensagem de obrigatoriedade), além dos casos ausentes. As listagens pública e autenticada validam paginação, IDs, nomes, preços e estoque de todos os itens retornados. Total atual: 14 cenários.

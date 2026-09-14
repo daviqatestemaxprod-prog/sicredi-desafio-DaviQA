@@ -27,11 +27,11 @@ jobs:
           cache: maven
 
       - name: Executar testes
-        run: mvn clean test
+        run: sh ./mvnw clean test
 
       - name: Gerar relatório Allure
         if: always()
-        run: mvn --batch-mode allure:report
+        run: sh ./mvnw --batch-mode allure:report
 
       - name: Guardar relatórios
         if: always()
