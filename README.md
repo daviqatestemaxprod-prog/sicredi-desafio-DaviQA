@@ -34,6 +34,20 @@ Execute o comando do Allure separadamente mesmo se houver falhas nos testes. Nã
 
 A integração contínua em `.github/workflows/ci.yml` executa `mvn clean test` com Java 17 em pushes para `main` e em pull requests destinados a `main`. Qualquer falha de teste reprova o job.
 
+No GitLab, `.gitlab-ci.yml` usa Maven 3.9.9 e Java 17. Executa em pushes para `main`, merge requests destinados a `main` e execuções manuais nessa branch. O checkout é realizado pelo GitLab Runner. É necessário um runner compatível com imagens Docker, habilitado e com acesso à internet.
+
+A pipeline tenta gerar o Allure mesmo quando os testes falham, preserva a falha do job e guarda os relatórios por 14 dias. Resultados JUnit aparecem na interface do GitLab; o HTML do Allure pode ser baixado nos artefatos do job `testes-api`. Falhas de infraestrutura ou timeout podem impedir a geração dos arquivos.
+
+**Checklist de entrega no GitLab**
+
+1. Criar o projeto com visibilidade **Private** e enviar o código e README para `main`.
+2. Definir `main` como branch padrão.
+3. Convidar `correcaoprovaqa@sicredi.com.br` (avaliador `sicredi_user`) como **Developer** e conferir o estado do convite.
+4. Se a candidatura for por empresa parceira, convidar também o representante informado com papel **Developer**.
+5. Conferir o job `testes-api`: resultado esperado de 12 testes aprovados e artefatos disponíveis. O sucesso local não confirma execução remota.
+
+Referência: [instruções oficiais de entrega](https://sicredi-desafio-qe.readme.io/reference/como-entregar-o-desafio). A criação do projeto privado, os convites e a execução remota precisam ser confirmados no GitLab; a presença deste checklist não significa que foram concluídos.
+
 **Validação:** execute `mvn clean test` para obter o resultado atual. Os testes acessam a API pública e dependem da sua disponibilidade.
 
 ## 🎯 Estratégia e Plano de Testes
