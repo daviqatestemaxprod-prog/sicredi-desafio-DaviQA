@@ -50,16 +50,36 @@ public class ProdutoTest extends BaseTest {
     }
 
     @Test
-    void naoDeveCadastrarProdutoSemToken() {
-        // Requisito solicitado: 401. A rota publica /products/add pode retornar 201.
-        // Manter ativo para evidenciar a divergencia, sem simular uma rejeicao.
+    void deveCadastrarProdutoSemTokenEmRotaPublica() {
         Response resposta = produtoRequest.cadastrarProdutoSemToken(
                 DataFactory.criarProdutoAleatorio());
 
+        resposta.then().statusCode(201);
+        ProdutoResponse criado = resposta.as(ProdutoResponse.class);
+        assertNotNull(criado.id());
+        assertTrue(criado.id() > 0);
+    }
+
+    @Test
+    void deveListarProdutosComTokenValido() {
+        Response resposta = produtoRequest.listarProdutosAutenticados(token);
+        resposta.then().statusCode(200);
+        ProdutosResponse produtos = resposta.as(ProdutosResponse.class);
+        assertNotNull(produtos.products());
+        assertFalse(produtos.products().isEmpty());
+    }
+
+    @Test
+    void naoDeveListarProdutosProtegidosSemToken() {
+        Response resposta = produtoRequest.listarProdutosProtegidosSemToken();
         resposta.then().statusCode(401);
-        // Nao existe mensagem de 401 documentada para esta rota publica.
-        String mensagem = resposta.jsonPath().getString("message");
-        assertNotNull(mensagem, "A rejeicao deve informar uma mensagem de erro.");
-        assertFalse(mensagem.isBlank(), "A mensagem de erro deve estar preenchida.");
+        assertEquals("Access Token is required", resposta.jsonPath().getString("message"));
+    }
+
+    @Test
+    void naoDeveListarProdutosProtegidosComTokenInvalido() {
+        Response resposta = produtoRequest.listarProdutosAutenticados("token-invalido");
+        resposta.then().statusCode(401);
+        assertEquals("Invalid/Expired Token!", resposta.jsonPath().getString("message"));
     }
 }

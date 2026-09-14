@@ -28,3 +28,18 @@ jobs:
 
       - name: Executar testes
         run: mvn clean test
+
+      - name: Gerar relatório Allure
+        if: always()
+        run: mvn --batch-mode allure:report
+
+      - name: Guardar relatórios
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: relatorios-testes
+          path: |
+            target/surefire-reports/
+            target/allure-results/
+            target/site/allure-maven-plugin/
+          retention-days: 14

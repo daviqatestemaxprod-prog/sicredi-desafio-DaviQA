@@ -6,6 +6,10 @@ import io.restassured.response.Response;
 
 public class ProdutoRequest extends BaseRequest {
 
+    public Response listarProdutosProtegidosSemToken() {
+        return novaRequisicao().get("/auth/products");
+    }
+
     public Response cadastrarProdutoSemToken(Produto produto) {
         return novaRequisicao()
                 .body(produto)

@@ -34,7 +34,7 @@ Execute o comando do Allure separadamente mesmo se houver falhas nos testes. Nã
 
 A integração contínua em `.github/workflows/ci.yml` executa `mvn clean test` com Java 17 em pushes para `main` e em pull requests destinados a `main`. Qualquer falha de teste reprova o job.
 
-**Estado da validação:** os testes ainda não foram executados neste ambiente, pois Maven não estava disponível no PATH. O cenário de cadastro sem token exige 401 e pode falhar contra a rota pública, conforme a ressalva abaixo.
+**Validação:** execute `mvn clean test` para obter o resultado atual. Os testes acessam a API pública e dependem da sua disponibilidade.
 
 ## 🎯 Estratégia e Plano de Testes
 
@@ -46,7 +46,10 @@ A estratégia foca no contrato da API, cobrindo fluxos felizes com status **200/
 | Login com senha inválida | HTTP 400 ou 401 e mensagem `Invalid credentials` |
 | Listagem de produtos | HTTP 200 e lista não vazia |
 | Cadastro de produto com token | HTTP 201, ID positivo e correspondência dos campos enviados |
-| Cadastro de produto sem token | HTTP 401 e mensagem de erro preenchida; requisito adicional em divergência com a documentação |
+| Cadastro público sem token | HTTP 201 e ID positivo |
+| Listagem autenticada | HTTP 200 e lista não vazia |
+| Listagem protegida sem token | HTTP 401 e mensagem `Access Token is required` |
+| Listagem protegida com token inválido | HTTP 401 e mensagem `Invalid/Expired Token!` |
 
 O Datafaker gera massa dinâmica para título, preço, descrição e quantidade. O login utiliza credenciais conhecidas para evitar depender de usuários aleatórios inexistentes. As requisições estão isoladas em `LoginRequest` e `ProdutoRequest`, que herdam a configuração comum de `BaseRequest`. `BaseTest` disponibiliza os clientes aos testes, e `ProdutoTest` obtém um token via `@BeforeEach`.
 
@@ -54,21 +57,17 @@ O cadastro retorna o objeto criado, sem mensagem textual de sucesso; por isso, o
 
 ## 🐛 Bugs Identificados
 
-**Cadastro sem autenticação — divergência do requisito de segurança solicitado**
+Nenhum bug funcional confirmado pelos cenários implementados. O cadastro em `/products/add` é público e simulado, conforme a documentação; retornar 201 sem token não é tratado como vulnerabilidade. As rejeições de autorização são verificadas em `/auth/products`.
 
-> O endpoint POST `/products/add` está público. É possível cadastrar produtos sem o envio de um token de autorização, o que fere a segurança da aplicação.
-
-**Ressalva:** essa descrição representa o requisito de segurança proposto para a suíte. A [documentação do desafio](https://sicredi-desafio-qe.readme.io/reference/post-products.md) apresenta o cadastro sem autenticação obrigatória. Portanto, o comportamento não constitui, por si só, um bug confirmado contra o contrato documentado; a exigência de autenticação deve ser validada com o responsável pelo requisito. Não houve confirmação por execução neste ambiente.
-
-- **Passos para verificar:** enviar um produto válido para `POST /products/add`, sem o header `Authorization`.
-- **Esperado pelo requisito solicitado:** HTTP 401 e mensagem de erro.
-- **Comportamento descrito pela documentação:** criação simulada com retorno do produto e HTTP 201, sem persistência.
-- **Cobertura:** `naoDeveCadastrarProdutoSemToken` permanece ativo e exige 401, para evidenciar a divergência quando a suíte for executada. Não há mensagem específica de 401 documentada para essa rota; o teste verifica que a mensagem está preenchida.
-
+A documentação do desafio apresenta exemplos de login e autenticação que podem divergir da versão atual do DummyJSON (status de login, nome do campo de token e erros de autenticação). A suíte valida login 200, aceita `token` ou `accessToken` e verifica os erros atuais. Essas diferenças devem ser tratadas como pontos de alinhamento da documentação.
 ## 💡 Melhorias
 
 - Padronizar o formato e o conteúdo das mensagens de erro da API.
 - Definir regras mais estritas para preço: tipo numérico, limite de casas decimais e rejeição de valores negativos ou incompatíveis.
 - Alinhar com o responsável pelo requisito quais rotas devem exigir autenticação e atualizar a documentação e os testes de acordo com essa decisão.
 - Ampliar a cobertura para campos obrigatórios, limites de quantidade, paginação e tokens inválidos ou expirados.
-- Publicar os resultados do Allure como artefatos da pipeline, inclusive quando houver falhas nos testes.
+- Ampliar a cobertura para consulta de produto por ID e validação de schemas JSON.
+
+A pipeline do GitHub gera o relatório Allure e disponibiliza o artefato `relatorios-testes`, mesmo quando os testes falham. O HTML fica em `target/site/allure-maven-plugin/index.html`.
+
+A entrega oficial exige repositório privado no GitLab, branch `main` e convite ao avaliador como Developer. O GitHub atual serve para desenvolvimento; não substitui esses requisitos de entrega.
