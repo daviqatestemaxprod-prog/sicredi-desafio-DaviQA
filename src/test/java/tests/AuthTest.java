@@ -11,6 +11,22 @@ import static org.junit.jupiter.api.Assertions.*;
 public class AuthTest extends BaseTest {
 
     @Test
+    void naoDeveRealizarLoginSemUsername() {
+        Response resposta = loginRequest.realizarLoginComPayload(java.util.Map.of(
+                "password", DataFactory.criarLoginValido().password()));
+        resposta.then().statusCode(400);
+        assertEquals("Username and password required", resposta.jsonPath().getString("message"));
+    }
+
+    @Test
+    void naoDeveRealizarLoginSemPassword() {
+        Response resposta = loginRequest.realizarLoginComPayload(java.util.Map.of(
+                "username", DataFactory.criarLoginValido().username()));
+        resposta.then().statusCode(400);
+        assertEquals("Username and password required", resposta.jsonPath().getString("message"));
+    }
+
+    @Test
     void deveRealizarLoginComSucesso() {
         Response resposta = loginRequest.realizarLogin(DataFactory.criarLoginValido());
 

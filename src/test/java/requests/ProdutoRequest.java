@@ -6,6 +6,10 @@ import io.restassured.response.Response;
 
 public class ProdutoRequest extends BaseRequest {
 
+    public Response buscarProdutoPorId(int id) {
+        return novaRequisicao().pathParam("id", id).get("/products/{id}");
+    }
+
     public Response listarProdutosProtegidosSemToken() {
         return novaRequisicao().get("/auth/products");
     }

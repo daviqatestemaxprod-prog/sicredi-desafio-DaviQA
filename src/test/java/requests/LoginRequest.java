@@ -7,6 +7,10 @@ import io.restassured.response.Response;
 
 public class LoginRequest extends BaseRequest {
 
+    public Response realizarLoginComPayload(java.util.Map<String, String> payload) {
+        return novaRequisicao().body(payload).post("/auth/login");
+    }
+
     public Response realizarLogin(Login login) {
         return novaRequisicao()
                 .body(login)

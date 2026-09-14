@@ -5,20 +5,16 @@ import dto.Produto;
 import dto.ProdutoResponse;
 import dto.ProdutosResponse;
 import io.restassured.response.Response;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import utils.DataFactory;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ProdutoTest extends BaseTest {
-    private String token;
-
-    @BeforeEach
-    void autenticar() {
+    private String autenticar() {
         Response resposta = loginRequest.realizarLogin(DataFactory.criarLoginValido());
         resposta.then().statusCode(200);
-        token = loginRequest.extrairToken(resposta);
+        return loginRequest.extrairToken(resposta);
     }
 
     @Test
@@ -35,7 +31,7 @@ public class ProdutoTest extends BaseTest {
     void deveCadastrarProdutoComSucesso() {
         Produto produto = DataFactory.criarProdutoAleatorio();
 
-        Response resposta = produtoRequest.cadastrarProduto(produto, token);
+        Response resposta = produtoRequest.cadastrarProduto(produto, autenticar());
 
         resposta.then().statusCode(201);
         // A API confirma a criacao com o produto e seu ID, sem campo message.
@@ -62,7 +58,7 @@ public class ProdutoTest extends BaseTest {
 
     @Test
     void deveListarProdutosComTokenValido() {
-        Response resposta = produtoRequest.listarProdutosAutenticados(token);
+        Response resposta = produtoRequest.listarProdutosAutenticados(autenticar());
         resposta.then().statusCode(200);
         ProdutosResponse produtos = resposta.as(ProdutosResponse.class);
         assertNotNull(produtos.products());
@@ -81,5 +77,27 @@ public class ProdutoTest extends BaseTest {
         Response resposta = produtoRequest.listarProdutosAutenticados("token-invalido");
         resposta.then().statusCode(401);
         assertEquals("Invalid/Expired Token!", resposta.jsonPath().getString("message"));
+    }
+
+    @Test
+    void deveBuscarProdutoPorIdExistente() {
+        Response resposta = produtoRequest.buscarProdutoPorId(1);
+        resposta.then().statusCode(200);
+        ProdutoResponse produto = resposta.as(ProdutoResponse.class);
+        assertEquals(1, produto.id());
+        assertNotNull(produto.nome());
+        assertFalse(produto.nome().isBlank());
+        assertNotNull(produto.preco());
+        assertTrue(produto.preco().signum() >= 0);
+        assertNotNull(produto.quantidade());
+        assertTrue(produto.quantidade() >= 0);
+    }
+
+    @Test
+    void naoDeveBuscarProdutoPorIdInexistente() {
+        int id = Integer.MAX_VALUE;
+        Response resposta = produtoRequest.buscarProdutoPorId(id);
+        resposta.then().statusCode(404);
+        assertEquals("Product with id '" + id + "' not found", resposta.jsonPath().getString("message"));
     }
 }
